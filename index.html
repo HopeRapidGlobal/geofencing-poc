@@ -34,7 +34,7 @@
     }
     let key = '';
     const dbUrl = 'https://geofencing-poc-6e77c-default-rtdb.asia-southeast1.firebasedatabase.app';
-    const maxTimes = 5;
+    const maxTimes = 10;
     const setKey = () => {
       const newKey = prompt('Please set auth key', '');
       if (newKey) {
@@ -51,17 +51,19 @@
         const timer = setInterval(() => {
           counter++;
           requestReuslt.innerHTML += `<li>Send request with data: ${counter}</li>`;
-          fetch(url, {
-            method: 'POST',
-            body: JSON.stringify({
-              data: counter,
+          navigator.geolocation.getCurrentPosition((position) => {
+            fetch(url, {
+              method: 'POST',
+              body: JSON.stringify({
+                data: `${position.coords.latitude}, ${position.coords.longitude}`,
+              })
             })
           })
           if (counter === maxTimes) {
             clearInterval(timer);
             requestReuslt.innerHTML += '<li>Stop</li>';
           }
-        }, 3000)
+        }, 2000)
       }
     }
     const clearDb = () => {
