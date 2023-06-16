@@ -46,7 +46,7 @@
       const url = getUrl();
       if (url) {
         const requestReuslt = document.getElementById('request-result');
-        requestReuslt.innerHTML += '<li>Start...</li>';
+        requestReuslt.innerHTML = '<li>Start...</li>';
         let counter = 0;
         const timer = setInterval(() => {
           counter++;
