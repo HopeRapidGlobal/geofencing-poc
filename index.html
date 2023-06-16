@@ -18,6 +18,7 @@
     <section>
       <h1>Data send to server</h1>
       <button onclick="start()">Start send</button>
+      <button onclick="stop()">Stop send</button>
       <ol id="request-result"></ol>
     </section>
     <section>
@@ -33,6 +34,7 @@
       navigator.serviceWorker.register("service-worker.js");
     }
     let key = '';
+    let watchId = -1;
     const dbUrl = 'https://geofencing-poc-6e77c-default-rtdb.asia-southeast1.firebasedatabase.app';
     const maxTimes = 10;
     const setKey = () => {
@@ -47,24 +49,34 @@
       if (url) {
         const requestReuslt = document.getElementById('request-result');
         requestReuslt.innerHTML = '<li>Start...</li>';
-        let counter = 0;
-        const timer = setInterval(() => {
-          counter++;
-          requestReuslt.innerHTML += `<li>Send request with data: ${counter}</li>`;
-          navigator.geolocation.getCurrentPosition((position) => {
-            fetch(url, {
-              method: 'POST',
-              body: JSON.stringify({
-                data: `${position.coords.latitude}, ${position.coords.longitude}`,
-              })
-            })
-          })
-          if (counter === maxTimes) {
-            clearInterval(timer);
-            requestReuslt.innerHTML += '<li>Stop</li>';
-          }
-        }, 2000)
+        watchId = navigator.geolocation.watchPosition((position) => {
+          const data = `${position.coords.latitude}, ${position.coords.longitude}`;
+          requestReuslt.innerHTML += `<li>Send request with data: ${data}</li>`;
+        });
+        // let counter = 0;
+        // const timer = setInterval(() => {
+        //   counter++;
+        //   navigator.geolocation.getCurrentPosition((position) => {
+        //     const data = `${position.coords.latitude}, ${position.coords.longitude}`;
+        //     requestReuslt.innerHTML += `<li>Send request with data: ${data}</li>`;
+        //     fetch(url, {
+        //       method: 'POST',
+        //       body: JSON.stringify({
+        //         data,
+        //       })
+        //     })
+        //   })
+        //   if (counter === maxTimes) {
+        //     clearInterval(timer);
+        //     requestReuslt.innerHTML += '<li>Stop</li>';
+        //   }
+        // }, 2000)
       }
+    }
+    const stop = () => {
+      navigator.geolocation.clearWatch(watchId);
+      const requestReuslt = document.getElementById('request-result');
+      requestReuslt.innerHTML += '<li>Stop</li>';
     }
     const clearDb = () => {
       const url = getUrl();
@@ -73,6 +85,8 @@
           method: 'DELETE',
         }).then(response => {
           if (response.ok) {
+            const dbData = document.getElementById('db-data');
+            dbData.innerHTML = '';
             alert('deleted');
           }
         })
