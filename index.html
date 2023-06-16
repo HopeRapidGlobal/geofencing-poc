@@ -7,7 +7,21 @@
   <title>Document</title>
   <style>
     * {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+    }
+
+    tr:nth-child(even) {
+      background-color: #dddddd;
     }
   </style>
 </head>
@@ -19,7 +33,16 @@
       <h1>Location data</h1>
       <button onclick="start()">Start tracking location</button>
       <button onclick="stop()">Stop tracking location</button>
-      <ol id="request-result"></ol>
+      <table id="table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Location</th>
+            <th>Distance</th>
+          </tr>
+        </thead>
+        <tbody id="tacking-data"></tbody>
+      </table>
     </section>
     <section>
       <h1>Data in server</h1>
@@ -45,11 +68,31 @@
         key = newKey;
       }
     }
+    const resetTable = () => {
+      const trackingData = document.getElementById('table');
+      trackingData.innerHTML = `
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Location</th>
+            <th>Distance</th>
+          </tr>
+        </thead>
+        <tbody id="tacking-data"></tbody>
+      `;
+    }
     const start = () => {
       const url = getUrl();
       if (url) {
-        const requestReuslt = document.getElementById('request-result');
-        requestReuslt.innerHTML = '<li>Start...</li>';
+        resetTable();
+        const trackingData = document.getElementById('tacking-data');
+        trackingData.innerHTML += `
+            <tr>
+              <td>${new Date().toLocaleString()}</td>
+              <td>Start tracking</td>
+              <td>${walkDistance}</td>
+            </tr>
+          `;
         watchId = navigator.geolocation.watchPosition((position) => {
           const {latitude, longitude} = position.coords;
           const locationData = `${latitude}, ${longitude}`;
@@ -58,7 +101,13 @@
           }
           prevLatitude = latitude;
           prevLongitude = longitude;
-          requestReuslt.innerHTML += `<li>${new Date().toLocaleString()}, ${locationData}, ${walkDistance}</li>`;
+          trackingData.innerHTML += `
+            <tr>
+              <td>${new Date().toLocaleString()}</td>
+              <td>${locationData}</td>
+              <td>${walkDistance}</td>
+            </tr>
+          `;
           if (walkDistance > 0.00005) {
             fetch(url, {
               method: 'POST',
@@ -66,18 +115,24 @@
                 data: `${new Date().toLocaleString()}, ${locationData}, ${walkDistance}`,
               })
             })
-            stop();
+            stop('Arrive');
           }
         });
       }
     }
-    const stop = () => {
+    const stop = (text = 'Stop tracking') => {
       navigator.geolocation.clearWatch(watchId);
-      const requestReuslt = document.getElementById('request-result');
-      requestReuslt.innerHTML += '<li>Stop</li>';
       walkDistance = 0;
       prevLatitude = 0;
       prevLongitude = 0;
+      const trackingData = document.getElementById('tacking-data');
+      trackingData.innerHTML += `
+        <tr>
+          <td>${new Date().toLocaleString()}</td>
+          <td>${text}</td>
+          <td>${walkDistance}</td>
+        </tr>
+      `;
     }
     const clearDb = () => {
       const url = getUrl();
