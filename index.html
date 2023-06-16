@@ -58,12 +58,12 @@
           }
           prevLatitude = latitude;
           prevLongitude = longitude;
-          requestReuslt.innerHTML += `<li>Location: ${locationData}</li>`;
+          requestReuslt.innerHTML += `<li>${new Date().toLocaleString()}, ${locationData}, ${walkDistance}</li>`;
           if (walkDistance > 0.00005) {
             fetch(url, {
               method: 'POST',
               body: JSON.stringify({
-                data: `${locationData}, ${walkDistance}`,
+                data: `${new Date().toLocaleString()}, ${locationData}, ${walkDistance}`,
               })
             })
             stop();
