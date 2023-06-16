@@ -16,9 +16,9 @@
   <button onclick="setKey()">Set auth key</button>
   <div>
     <section>
-      <h1>Data send to server</h1>
-      <button onclick="start()">Start send</button>
-      <button onclick="stop()">Stop send</button>
+      <h1>Location data</h1>
+      <button onclick="start()">Start tracking location</button>
+      <button onclick="stop()">Stop tracking location</button>
       <ol id="request-result"></ol>
     </section>
     <section>
@@ -30,13 +30,14 @@
   </div>
   <script>
     if ("serviceWorker" in navigator) {
-      // register service worker
       navigator.serviceWorker.register("service-worker.js");
     }
     let key = '';
     let watchId = -1;
+    let walkDistance = 0;
+    let prevLatitude = 0;
+    let prevLongitude = 0;
     const dbUrl = 'https://geofencing-poc-6e77c-default-rtdb.asia-southeast1.firebasedatabase.app';
-    const maxTimes = 10;
     const setKey = () => {
       const newKey = prompt('Please set auth key', '');
       if (newKey) {
@@ -50,33 +51,33 @@
         const requestReuslt = document.getElementById('request-result');
         requestReuslt.innerHTML = '<li>Start...</li>';
         watchId = navigator.geolocation.watchPosition((position) => {
-          const data = `${position.coords.latitude}, ${position.coords.longitude}`;
-          requestReuslt.innerHTML += `<li>Send request with data: ${data}</li>`;
+          const {latitude, longitude} = position.coords;
+          const locationData = `${latitude}, ${longitude}`;
+          if (!(walkDistance === 0 && prevLatitude === 0 && prevLongitude === 0)) {
+            walkDistance = Math.abs(latitude - prevLatitude) + Math.abs(longitude - prevLongitude);
+          }
+          prevLatitude = latitude;
+          prevLongitude = longitude;
+          requestReuslt.innerHTML += `<li>Location: ${locationData}</li>`;
+          if (walkDistance > 0.00005) {
+            fetch(url, {
+              method: 'POST',
+              body: JSON.stringify({
+                data: `${locationData}, ${walkDistance}`,
+              })
+            })
+            stop();
+          }
         });
-        // let counter = 0;
-        // const timer = setInterval(() => {
-        //   counter++;
-        //   navigator.geolocation.getCurrentPosition((position) => {
-        //     const data = `${position.coords.latitude}, ${position.coords.longitude}`;
-        //     requestReuslt.innerHTML += `<li>Send request with data: ${data}</li>`;
-        //     fetch(url, {
-        //       method: 'POST',
-        //       body: JSON.stringify({
-        //         data,
-        //       })
-        //     })
-        //   })
-        //   if (counter === maxTimes) {
-        //     clearInterval(timer);
-        //     requestReuslt.innerHTML += '<li>Stop</li>';
-        //   }
-        // }, 2000)
       }
     }
     const stop = () => {
       navigator.geolocation.clearWatch(watchId);
       const requestReuslt = document.getElementById('request-result');
       requestReuslt.innerHTML += '<li>Stop</li>';
+      walkDistance = 0;
+      prevLatitude = 0;
+      prevLongitude = 0;
     }
     const clearDb = () => {
       const url = getUrl();
