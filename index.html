@@ -97,7 +97,7 @@
           const {latitude, longitude} = position.coords;
           const locationData = `${latitude}, ${longitude}`;
           if (!(walkDistance === 0 && prevLatitude === 0 && prevLongitude === 0)) {
-            walkDistance = Math.abs(latitude - prevLatitude) + Math.abs(longitude - prevLongitude);
+            walkDistance += Math.abs(latitude - prevLatitude) + Math.abs(longitude - prevLongitude);
           }
           prevLatitude = latitude;
           prevLongitude = longitude;
