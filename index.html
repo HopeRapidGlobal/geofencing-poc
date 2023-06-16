@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/manifest.json" />
+  <title>Document</title>
+  <style>
+    * {
+      font-size: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div>Auth key: <span id="auth-key"></span></div>
+  <button onclick="setKey()">Set auth key</button>
+  <div>
+    <section>
+      <h1>Data send to server</h1>
+      <button onclick="start()">Start send</button>
+      <ol id="request-result"></ol>
+    </section>
+    <section>
+      <h1>Data in server</h1>
+      <button onclick="show()">Show data</button>
+      <button onclick="clearDb()">Clear data</button>
+      <ol id="db-data"></ol>
+    </section>
+  </div>
+  <script>
+    if ("serviceWorker" in navigator) {
+      // register service worker
+      navigator.serviceWorker.register("service-worker.js");
+    }
+    let key = '';
+    const dbUrl = 'https://geofencing-poc-6e77c-default-rtdb.asia-southeast1.firebasedatabase.app';
+    const maxTimes = 5;
+    const setKey = () => {
+      const newKey = prompt('Please set auth key', '');
+      if (newKey) {
+        document.getElementById('auth-key').innerHTML = newKey;
+        key = newKey;
+      }
+    }
+    const start = () => {
+      const url = getUrl();
+      if (url) {
+        const requestReuslt = document.getElementById('request-result');
+        requestReuslt.innerHTML += '<li>Start...</li>';
+        let counter = 0;
+        const timer = setInterval(() => {
+          counter++;
+          requestReuslt.innerHTML += `<li>Send request with data: ${counter}</li>`;
+          fetch(url, {
+            method: 'POST',
+            body: JSON.stringify({
+              data: counter,
+            })
+          })
+          if (counter === maxTimes) {
+            clearInterval(timer);
+            requestReuslt.innerHTML += '<li>Stop</li>';
+          }
+        }, 3000)
+      }
+    }
+    const clearDb = () => {
+      const url = getUrl();
+      if (url) {
+        fetch(url, {
+          method: 'DELETE',
+        }).then(response => {
+          if (response.ok) {
+            alert('deleted');
+          }
+        })
+      }
+    }
+    const show = () => {
+      const url = getUrl();
+      if (url) {
+        fetch(url)
+        .then(response => response.json())
+        .then(result => {
+          const dbData = document.getElementById('db-data');
+          dbData.innerHTML = '';
+          if (result) {
+            Object.values(result).forEach(obj => dbData.innerHTML += `<li>${obj.data}</li>`);
+          }
+        });
+      }
+    }
+    const getUrl = () => {
+      if (key) {
+        return `${dbUrl}/${key}/messages.json`;
+      }
+      alert('Please set auth key');
+      return '';
+    };
+  </script>
+</body>
+</html>
