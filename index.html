@@ -34,6 +34,7 @@
       <button onclick="start()">Start tracking location</button>
       <button onclick="stop()">Stop tracking location</button>
       <button onclick="logData()">Log data</button>
+      <button onclick="clearLogData()">Clear log data</button>
       <table id="table">
         <thead>
           <tr>
@@ -61,7 +62,7 @@
     let walkDistance = 0;
     let prevLatitude = 0;
     let prevLongitude = 0;
-    const locationLog = [];
+    const locationLogKey = 'locationLog';
     const dbUrl = 'https://geofencing-poc-6e77c-default-rtdb.asia-southeast1.firebasedatabase.app';
     const setKey = () => {
       const newKey = prompt('Please set auth key', '');
@@ -119,10 +120,18 @@
           //   })
           //   stop('Arrive');
           // }
-          locationLog.push({
+          const newLog = {
             time: new Date(position.timestamp).toLocaleString(),
             location: locationData,
-          });
+          }
+          let logDataString = localStorage.getItem(locationLogKey);
+          let logDataArray = [];
+          if (logDataString) {
+            logDataArray = JSON.parse(logDataString);
+          }
+          logDataArray.push(newLog);
+          logDataString = JSON.stringify(logDataArray);
+          localStorage.setItem(locationLogKey, logDataString);
         });
       }
     }
@@ -142,7 +151,9 @@
     }
     const logData = () => {
       const trackingData = document.getElementById('tacking-data');
-      locationLog.forEach(location => {
+      const logDataString = localStorage.getItem('locationLog');
+      const logDataArray = JSON.parse(logDataString);
+      logDataArray.forEach(location => {
         trackingData.innerHTML += `
           <tr>
             <td>${location.time}</td>
@@ -151,6 +162,9 @@
           </tr>
         `;
       })
+    }
+    const clearLogData = () => {
+      localStorage.removeItem(locationLogKey);
     }
     const clearDb = () => {
       const url = getUrl();
