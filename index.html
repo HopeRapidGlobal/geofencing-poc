@@ -33,6 +33,7 @@
       <h1>Location data</h1>
       <button onclick="start()">Start tracking location</button>
       <button onclick="stop()">Stop tracking location</button>
+      <button onclick="logData()">Log data</button>
       <table id="table">
         <thead>
           <tr>
@@ -60,6 +61,7 @@
     let walkDistance = 0;
     let prevLatitude = 0;
     let prevLongitude = 0;
+    const locationLog = [];
     const dbUrl = 'https://geofencing-poc-6e77c-default-rtdb.asia-southeast1.firebasedatabase.app';
     const setKey = () => {
       const newKey = prompt('Please set auth key', '');
@@ -96,27 +98,31 @@
         watchId = navigator.geolocation.watchPosition((position) => {
           const {latitude, longitude} = position.coords;
           const locationData = `${latitude}, ${longitude}`;
-          if (!(walkDistance === 0 && prevLatitude === 0 && prevLongitude === 0)) {
-            walkDistance += Math.abs(latitude - prevLatitude) + Math.abs(longitude - prevLongitude);
-          }
-          prevLatitude = latitude;
-          prevLongitude = longitude;
-          trackingData.innerHTML += `
-            <tr>
-              <td>${new Date().toLocaleString()}</td>
-              <td>${locationData}</td>
-              <td>${walkDistance}</td>
-            </tr>
-          `;
-          if (walkDistance > 0.00005) {
-            fetch(url, {
-              method: 'POST',
-              body: JSON.stringify({
-                data: `${new Date().toLocaleString()}, ${locationData}, ${walkDistance}`,
-              })
-            })
-            stop('Arrive');
-          }
+          // if (!(walkDistance === 0 && prevLatitude === 0 && prevLongitude === 0)) {
+          //   walkDistance += Math.abs(latitude - prevLatitude) + Math.abs(longitude - prevLongitude);
+          // }
+          // prevLatitude = latitude;
+          // prevLongitude = longitude;
+          // trackingData.innerHTML += `
+          //   <tr>
+          //     <td>${new Date(position.timestamp).toLocaleString()}</td>
+          //     <td>${locationData}</td>
+          //     <td>${walkDistance}</td>
+          //   </tr>
+          // `;
+          // if (walkDistance > 0.00005) {
+          //   fetch(url, {
+          //     method: 'POST',
+          //     body: JSON.stringify({
+          //       data: `${new Date().toLocaleString()}, ${locationData}, ${walkDistance}`,
+          //     })
+          //   })
+          //   stop('Arrive');
+          // }
+          locationLog.push({
+            time: new Date(position.timestamp).toLocaleString(),
+            location: locationData,
+          });
         });
       }
     }
@@ -133,6 +139,18 @@
           <td>${walkDistance}</td>
         </tr>
       `;
+    }
+    const logData = () => {
+      const trackingData = document.getElementById('tacking-data');
+      locationLog.forEach(location => {
+        trackingData.innerHTML += `
+          <tr>
+            <td>${location.time}</td>
+            <td>${location.location}</td>
+            <td>0</td>
+          </tr>
+        `;
+      })
     }
     const clearDb = () => {
       const url = getUrl();
