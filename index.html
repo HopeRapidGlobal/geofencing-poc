@@ -99,18 +99,18 @@
         watchId = navigator.geolocation.watchPosition((position) => {
           const {latitude, longitude} = position.coords;
           const locationData = `${latitude}, ${longitude}`;
-          // if (!(walkDistance === 0 && prevLatitude === 0 && prevLongitude === 0)) {
-          //   walkDistance += Math.abs(latitude - prevLatitude) + Math.abs(longitude - prevLongitude);
-          // }
-          // prevLatitude = latitude;
-          // prevLongitude = longitude;
-          // trackingData.innerHTML += `
-          //   <tr>
-          //     <td>${new Date(position.timestamp).toLocaleString()}</td>
-          //     <td>${locationData}</td>
-          //     <td>${walkDistance}</td>
-          //   </tr>
-          // `;
+          if (!(walkDistance === 0 && prevLatitude === 0 && prevLongitude === 0)) {
+            walkDistance += Math.abs(latitude - prevLatitude) + Math.abs(longitude - prevLongitude);
+          }
+          prevLatitude = latitude;
+          prevLongitude = longitude;
+          trackingData.innerHTML += `
+            <tr>
+              <td>${new Date(position.timestamp).toLocaleString()}</td>
+              <td>${locationData}</td>
+              <td>${walkDistance}</td>
+            </tr>
+          `;
           // if (walkDistance > 0.00005) {
           //   fetch(url, {
           //     method: 'POST',
@@ -120,18 +120,18 @@
           //   })
           //   stop('Arrive');
           // }
-          const newLog = {
-            time: new Date(position.timestamp).toLocaleString(),
-            location: locationData,
-          }
-          let logDataString = localStorage.getItem(locationLogKey);
-          let logDataArray = [];
-          if (logDataString) {
-            logDataArray = JSON.parse(logDataString);
-          }
-          logDataArray.push(newLog);
-          logDataString = JSON.stringify(logDataArray);
-          localStorage.setItem(locationLogKey, logDataString);
+          // const newLog = {
+          //   time: new Date(position.timestamp).toLocaleString(),
+          //   location: locationData,
+          // }
+          // let logDataString = localStorage.getItem(locationLogKey);
+          // let logDataArray = [];
+          // if (logDataString) {
+          //   logDataArray = JSON.parse(logDataString);
+          // }
+          // logDataArray.push(newLog);
+          // logDataString = JSON.stringify(logDataArray);
+          // localStorage.setItem(locationLogKey, logDataString);
         });
       }
     }
